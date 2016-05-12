@@ -1,0 +1,3 @@
+[client]
+user=root
+password={% if mysql_root_password is defined %}{{ mysql_root_password }}{% else %}{{ random_password.stdout }}{% endif %}

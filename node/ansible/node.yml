@@ -1,0 +1,28 @@
+---
+
+# A sample Node.js dev box with Supervisor and Nginx
+
+  - hosts: node
+
+    become: yes
+    become_user: root
+    become_method: sudo
+
+    # Customize vars for Node or MySQL (see mysql playbook)
+    # vars:
+
+    roles:
+      - { role: node, tags: ['node'] }
+
+      # You can add MySQL and MongoDB roles here...
+      # - { role: mysql, tags: ['mysql'] }
+      # - { role: mongodb, tags: ['mongodb'] }
+
+    tasks:
+
+      # Add MySQL tasks here (see mysql playbook)
+
+      - name: Hello NodeBox
+        action: shell echo "Hello Node Box!"
+        register: result
+      - debug: var=result.stdout

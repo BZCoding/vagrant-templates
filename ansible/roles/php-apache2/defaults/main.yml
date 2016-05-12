@@ -1,0 +1,4 @@
+---
+
+php_apache2_packages:
+    - libapache2-mod-php5

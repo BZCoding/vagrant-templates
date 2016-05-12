@@ -1,0 +1,28 @@
+---
+
+# A sample Ruby dev box
+
+  - hosts: ruby
+
+    become: yes
+    become_user: root
+    become_method: sudo
+
+    # Customize vars for Ruby or MySQL (see mysql playbook)
+    # vars:
+
+    roles:
+      - { role: ruby, tags: ['ruby'] }
+
+      # You can add MySQL and MongoDB roles here...
+      # - { role: mysql, tags: ['mysql'] }
+      # - { role: mongodb, tags: ['mongodb'] }
+
+    tasks:
+
+      # Add MySQL tasks here (see mysql playbook)
+
+      - name: Hello RubyBox
+        action: shell echo "Hello Ruby Box!"
+        register: result
+      - debug: var=result.stdout

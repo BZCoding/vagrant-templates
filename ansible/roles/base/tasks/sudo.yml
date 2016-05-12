@@ -1,0 +1,25 @@
+---
+
+## Ensure sudo is installed
+- name: ensure sudo is installed
+  apt: name=sudo state=present
+
+## Setup Sudo
+- name: backup sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+  register: sudoers_backup
+  args:
+    creates: /etc/sudoers.tmp
+
+- name: ensure admins group is present
+  group: name=admin system=yes state=present
+
+- name: make sure we can sudo as admin group
+  lineinfile: dest=/etc/sudoers.tmp state=present regexp='^%admin' line='%admin ALL=(ALL) ALL'
+
+- name: also make sure ssh-agent works via sudo
+  lineinfile: dest=/etc/sudoers.tmp state=present regexp='^Defaults env_keep\+\=SSH_AUTH_SOCK' line='Defaults env_keep+=SSH_AUTH_SOCK'
+
+- name: sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers
+  when: sudoers_backup is defined

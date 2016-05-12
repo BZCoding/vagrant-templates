@@ -1,0 +1,34 @@
+---
+# Installs and set up Nginx
+
+- name: Debian | install packages
+  apt: pkg={{ item }} state=installed
+  with_items: "{{ nginx_packages }}"
+  register: nginx_install
+  tags: nginx
+
+- name: Copy default website
+  copy:
+    src: "html"
+    dest: "/usr/share/nginx/html"
+    mode: 0755
+  tags: nginx
+
+- name: Load nginx main conf
+  template:
+    src: nginx.conf.j2
+    dest: "/etc/nginx/nginx.conf"
+    mode: 0644
+  tags: nginx
+
+- name: Load nginx default website conf
+  template:
+    src: conf.d/default.conf.j2
+    dest: "/etc/nginx/conf.d/00-default.conf"
+    mode: 0644
+  notify: restart nginx
+  tags: nginx
+
+- name: Start nginx service
+  service: name=nginx state=started enabled=yes
+  tags: nginx

@@ -1,0 +1,7 @@
+---
+
+## Timezone install and setup
+# For CentOS see https://gist.github.com/tracphil/1eb7ae1efa3ccdde1fba
+- name: set timezone
+  template: src=timezone.conf.j2 dest=/etc/timezone
+  notify: update timezone

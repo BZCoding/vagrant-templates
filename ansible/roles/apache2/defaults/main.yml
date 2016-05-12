@@ -1,0 +1,24 @@
+---
+# defaults file for apache2
+
+apache2_modules_disabled:
+  - autoindex
+  - authn_anon
+  - cgi
+  - dav
+  - env
+  - negotiation
+  - setenvif
+  - status
+  - userdir
+
+apache2_modules_enabled:
+  - alias
+  - auth_digest
+  - authz_host
+  - deflate
+  - dir
+  - headers
+  - reqtimeout
+  - rewrite
+  - ssl

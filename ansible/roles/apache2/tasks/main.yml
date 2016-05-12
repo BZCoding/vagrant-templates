@@ -1,0 +1,73 @@
+---
+# file: roles/apache2/tasks/main.yml
+
+- name: Use correct Apache security configuration filename for Ubuntu and Debian
+  set_fact: apache2_sec_conf="{{ '/etc/apache2/conf-available/security.conf' }}"
+  when: ((ansible_distribution == 'Ubuntu') and (ansible_distribution_version >= '12.04' )) or ((ansible_distribution == 'Debian') and (ansible_distribution_version >= '8'))
+
+- name: Use default Apache security configuration filename for other distros
+  set_fact: apache2_sec_conf="{{ '/etc/apache2/conf.d/security.conf' }}"
+  when: apache2_sec_conf is not defined
+
+- name: Use correct Apache default sitename
+  set_fact: apache2_default_site="{{ '000-default' if ((ansible_distribution == 'Debian') and (ansible_distribution_version >= '8')) else 'default' }}"
+
+- name: Install apache2
+  apt:
+    name: apache2
+    cache_valid_time: 86400
+    force: yes
+    install-recommends: no
+    update_cache: yes
+    state: present
+
+- name: Harden Apache security configuration
+  template:
+    src: security.conf.j2
+    dest: "{{ apache2_sec_conf }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart apache2
+  tags:
+    - harden
+
+- name: Enable Apache security configuration
+  command: a2enconf security.conf
+  args:
+    creates: /etc/apache2/conf-enabled/security.conf
+  notify:
+    - reload apache2
+
+- name: Disable the default sites
+  command: a2dissite {{ apache2_default_site }}
+  args:
+    removes: /etc/apache2/sites-enabled/{{ apache2_default_site }}.conf
+  notify:
+    - restart apache2
+  tags:
+    - harden
+
+- name: Disable Apache modules
+  command: "a2dismod -f {{ item }}"
+  args:
+    removes: "/etc/apache2/mods-enabled/{{ item }}"
+  # Should be better but does not work
+  # apache2_module:
+  #   name: "{{ item }}"
+  #   state: absent
+  with_items: "{{ apache2_modules_disabled|default([]) }}"
+  notify:
+    - restart apache2
+  tags:
+    - harden
+
+- name: Enable Apache modules
+  apache2_module:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ apache2_modules_enabled|default([]) }}"
+  notify:
+    - restart apache2
+  tags:
+    - harden

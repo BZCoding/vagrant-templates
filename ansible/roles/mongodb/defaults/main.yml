@@ -1,0 +1,15 @@
+---
+# defaults file for mongodb on Ubuntu/Debian
+#mongodb_bind_address: 127.0.0.1
+mongodb_port: 27017
+
+# Debian vars
+mongodb_service_name: "mongodb"
+mongodb_packages:
+  - mongodb
+  - mongodb-clients
+  - mongodb-server
+  - mongodb-dev
+
+mongodb_dbpath: /var/lib/mongodb
+mongodb_logpath: /var/log/mongodb/mongodb.log

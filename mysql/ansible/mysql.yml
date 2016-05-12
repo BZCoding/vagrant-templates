@@ -1,0 +1,82 @@
+---
+  - hosts: mysql
+
+    become: yes
+    become_user: "root"
+    become_method: "sudo"
+
+    vars:
+      mysql_databases:
+        - foo
+        - bar
+
+      mysql_import_databases:
+        - { name: foo, src: foo.sql }
+
+      mysql_dump_databases:
+        - { name: foo, dest: /vagrant/foo_dump.sql }
+
+      mysql_delete_databases:
+        - bar
+
+    roles:
+      - {role: mysql }
+
+    tasks:
+
+      - name: add databases
+        mysql_db:
+          name: "{{ item }}"
+          state: present
+        with_items: "{{ mysql_databases }}"
+        when: mysql_databases is defined
+        tags: import
+
+      - name: copy database import files
+        copy:
+          src: "{{ item.src }}"
+          dest: /tmp
+        with_items: "{{ mysql_import_databases }}"
+        when: mysql_import_databases is defined
+        tags: import
+
+      - name: import databases
+        mysql_db:
+          name: "{{ item.name }}"
+          state: import
+          target: "/tmp/{{ item.src }}"
+        with_items: "{{ mysql_import_databases }}"
+        when: mysql_import_databases is defined
+        tags: import
+
+      - name: dump databases
+        mysql_db:
+          name: "{{ item.name }}"
+          state: dump
+          target: "{{ item.dest }}"
+        with_items: "{{ mysql_dump_databases }}"
+        when: mysql_dump_databases is defined
+        tags: dump
+
+      - name: adjust dump database files permissions
+        file:
+          path: "{{ item.dest }}"
+          owner: vagrant
+          group: vagrant
+          mode: 0664
+        with_items: "{{ mysql_dump_databases }}"
+        when: mysql_dump_databases is defined
+        tags: dump
+
+      - name: delete databases
+        mysql_db:
+          name: "{{ item }}"
+          state: absent
+        with_items: "{{ mysql_delete_databases }}"
+        when: mysql_delete_databases is defined
+        tags: delete
+
+      - name: Hello MySQL
+        action: shell echo "Hello MySQL!"
+        register: result
+      - debug: var=result.stdout

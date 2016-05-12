@@ -1,0 +1,11 @@
+Header set X-Content-Type-Options: "nosniff"
+
+Header set X-Frame-Options: "sameorigin"
+
+ServerName {{ apache2_server_name|default(ansible_fqdn) }}
+
+ServerTokens Prod
+
+ServerSignature Off
+
+TraceEnable Off

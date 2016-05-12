@@ -1,0 +1,29 @@
+---
+# defaults file for mysql on Ubuntu/Debian
+#mysql_bind_address: 127.0.0.1
+mysql_port: 3306
+
+# Debian vars
+mysql_service_name: "mysql"
+mysql_packages:
+  - python-mysqldb
+  - mysql-server
+
+# Leave it false on production, true for development
+mysql_root_everywhere: false
+
+# Replication (not used)
+mysql_replication: false
+mysql_configure_slave: false
+mysql_replication_user: replicant
+
+mysql_log_bin: "/var/lib/mysql/binary-log"
+mysql_expire_logs_days: 5
+
+mysql_relay_log: "/var/lib/mysql/relay-log"
+mysql_relay_log_space_limit: "4G"
+
+mysql_databases: []
+mysql_import_databases: []
+mysql_dump_databases: []
+mysql_delete_databases: []

@@ -1,0 +1,28 @@
+---
+
+- name: list existing global packages
+  shell: 'source {{ nvm_profile }} || true && npm ls --global --depth 0'
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  register: nvm_npm_installed_packaged
+  tags: nvm
+
+- name: install default global packages
+  shell: 'source {{ nvm_profile }} || true && npm install --global {{item}}'
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+  when: item not in nvm_npm_installed_packaged.stdout
+  with_items: "{{nvm_npm_pkg}}"
+  tags: nvm
+
+- name: list globally install packages
+  shell: 'source {{ nvm_profile }} || true && npm  ls --global --depth=0'
+  args:
+    executable: /bin/bash
+  register: installed_packages
+  tags: nvm
+
+- debug: var=installed_packages
+  tags: nvm

@@ -1,0 +1,52 @@
+---
+
+# A sample PHP/Nginx playbook
+
+  - hosts: php
+
+    become: yes
+    become_user: root
+    become_method: sudo
+
+    # Customize vars for Nginx, PHP or MySQL (see mysql playbook)
+    # vars:
+
+    roles:
+      - { role: php-nginx, tags: ['php','nginx'] }
+
+      # You can add MySQL and MongoDB roles here...
+      # - { role: mysql, tags: ['mysql'] }
+      # - { role: mongodb, tags: ['mongodb'] }
+
+    tasks:
+
+      # Add MySQL tasks here (see mysql playbook)
+
+      # Add Nginx tasks here
+      - name: copy app vhost file
+        copy:
+          src: etc/nginx/vhost.conf
+          dest: /etc/nginx/conf.d/00-default.conf # Override nginx role default file
+          owner: root
+          group: root
+          mode: 0644
+        notify:
+          - reload nginx
+
+      # See https://docs.ansible.com/ansible/composer_module.html
+      - name: run composer install
+        composer:
+          command: install
+          working_dir: /app
+
+      - name: Hello PHP
+        action: shell echo "Hello PHP!"
+        register: result
+      - debug: var=result.stdout
+
+    handlers:
+      - name: restart nginx
+        service: name=nginx state=restarted
+
+      - name: reload nginx
+        service: name=nginx state=reloaded

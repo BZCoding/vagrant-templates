@@ -1,0 +1,76 @@
+# Composer settings
+composer_install_dir: /usr/local/composer
+composer_bin_location: /usr/local/bin/composer
+
+# Base packages
+php_packages:
+    - mysql-client
+    - bzip2
+    - zip
+    - unzip
+    - git
+    - libssl-dev
+    - zlib1g-dev
+    - libicu-dev
+    - g++
+    - php5-common
+    - php5-dev
+    - php5-mysql
+    - php5-sqlite
+    - php5-pgsql
+    - php5-cli
+    - php5-curl
+    - php5-json
+    - php5-intl
+    - php5-mcrypt
+    - php5-xdebug
+    - php5-mongo
+    - php5-apcu
+    - php-pear
+
+
+# Basic
+php_memory_limit: 128M
+
+php_timezone: UTC
+
+php_default_charset: "UTF-8"
+
+# Security
+php_expose_php: Off
+
+php_allow_url_fopen: Off
+
+php_enable_dl: Off
+
+php_assert_active: Off
+
+php_mail_add_x_header: Off
+
+# Uploads
+php_upload_max_filesize: 15M
+
+php_post_max_size: 8M
+
+php_max_file_uploads: 20
+
+
+# Super globals
+php_variables_order: EGPCS
+
+php_request_order: EGP
+
+# Error stuff
+php_error_reporting: "E_ALL & ~E_DEPRECATED & ~E_STRICT"
+
+php_html_errors: On
+
+php_log_errors: On
+
+php_display_errors: Off
+
+php_display_startup_errors: Off
+
+php_error_log: /var/log/apache2/php.log
+
+php_disable_functions: "fsockopen,pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriorit,stream_socket_client"

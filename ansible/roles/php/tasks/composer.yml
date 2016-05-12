@@ -1,0 +1,26 @@
+---
+- name: set composer directory permissions
+  file:
+    path: "{{ composer_install_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: download installer
+  get_url:
+    url: https://getcomposer.org/installer
+    dest: "{{ composer_install_dir }}/installer"
+    mode: 0755
+
+- name: install composer
+  command: "php ./installer"
+  args:
+    chdir: "{{ composer_install_dir }}"
+    creates: "{{ composer_install_dir }}/composer.phar"
+
+- name: create symlink
+  file:
+    src: "{{ composer_install_dir }}/composer.phar"
+    dest: "{{ composer_bin_location }}"
+    state: link

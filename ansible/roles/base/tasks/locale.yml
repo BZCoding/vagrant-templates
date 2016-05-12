@@ -1,0 +1,10 @@
+---
+
+## Set default locale to UTF8
+- name: set locale to UTF8
+  copy:
+    src: "etc_default_locale"
+    dest: "/etc/default/locale"
+    owner: "root"
+    group: "root"
+    mode: 0644

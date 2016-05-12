@@ -1,0 +1,11 @@
+---
+
+- name: Debian | install packages
+  apt: pkg={{ item }} state=installed
+  with_items: "{{ php_packages }}"
+  register: php_install
+
+- name: Install composer
+  include: composer.yml
+  tags:
+    - composer

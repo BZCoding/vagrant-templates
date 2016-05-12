@@ -1,0 +1,48 @@
+; Basic
+memory_limit = {{ php_memory_limit | default('128M')}}
+
+date.timezone = {{ php_timezone | default('UTC')}}
+
+; PHP's default character set is set to empty.
+; http://php.net/default-charset
+default_charset = "{{ php_default_charset | default('UTF-8')}}"
+
+; Security
+expose_php = {{ php_expose_php | default('Off')}}
+
+allow_url_fopen = {{ php_allow_url_fopen | default('Off')}}
+
+enable_dl = {{ php_enable_dl | default('Off')}}
+
+; Uploads
+upload_max_filesize = {{ php_upload_max_filesize | default('15M')}}
+
+post_max_size = {{ php_post_max_size | default('8M')}}
+
+max_file_uploads = {{ php_max_file_uploads | default('20')}}
+
+
+; Super globals
+variables_order = {{ php_variables_order | default('EGPCS')}}
+
+request_order = {{ php_request_order | default('EGP')}}
+
+; Error stuff
+error_reporting = {{ php_error_reporting | default('E_ALL & ~E_DEPRECATED & ~E_STRICT')}}
+
+html_errors = {{ php_html_errors | default('On')}}
+
+log_errors = {{ php_log_errors | default('On')}}
+
+display_errors = {{ php_display_errors | default(Off)}}
+
+display_startup_errors = {{ php_display_startup_errors | default('Off')}}
+
+error_log = {{ php_error_log | default('/var/log/apache2/php.log')}}
+
+; Assert(expr); active by default.
+; http://php.net/assert.active
+assert.active = {{ php_assert_active | default('Off')}}
+
+; Add X-PHP-Originating-Script: that will include uid of the script followed by the filename
+mail.add_x_header = {{ php_mail_add_x_header | default('Off')}}

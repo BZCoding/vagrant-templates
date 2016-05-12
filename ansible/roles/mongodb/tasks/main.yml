@@ -1,0 +1,13 @@
+---
+
+- name: Debian | install packages
+  apt: pkg={{ item }} state=installed
+  with_items: "{{ mongodb_packages }}"
+  register: mongodb_install
+
+- name: ensure mongodb is started
+  service: name={{ mongodb_service_name }} state=started enabled=yes
+
+- name: Debian | configure the service
+  template: src=mongodb.conf.j2 dest=/etc/mongodb.conf owner=root group=root mode=0644
+  notify: restart mongodb

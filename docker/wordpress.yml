@@ -1,0 +1,40 @@
+# Start with: docker-compose -f wordpress.yml up -d
+version: "2"
+services:
+
+    wordpress:
+        container_name: wordpress
+
+        image: wordpress
+
+        ports:
+            - "80:80"
+
+        links:
+            - mysql
+
+        environment:
+           - WORDPRESS_DB_HOST=mysql
+           - MYSQL_PORT_3306_TCP=3306
+           - WORDPRESS_DB_NAME=wordpress
+           - WORDPRESS_DB_USER=wordpress
+           - WORDPRESS_DB_PASSWORD=wordpresspwd
+
+    mysql:
+        container_name: mysql
+
+        image: mysql # https://hub.docker.com/_/mysql/
+
+        ports:
+            - "3306:3306"
+
+        # Use custom /etc/mysql/my.conf file by mapping it as a volume
+        volumes:
+           - /home/docker/mysql:/var/lib/mysql
+        #    - /my/custom:/etc/mysql/conf.d
+
+        environment:
+           - MYSQL_ROOT_PASSWORD=wordpressdocker
+           - MYSQL_DATABASE=wordpress
+           - MYSQL_USER=wordpress
+           - MYSQL_PASSWORD=wordpresspwd

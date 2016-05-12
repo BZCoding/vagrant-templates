@@ -1,0 +1,14 @@
+{
+    "name": "dev/test",
+    "description": "Test app for Vagrant box",
+    "require": {
+        "slim/slim": "^3.2"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vito Tardia",
+            "email": "vito@tardia.me"
+        }
+    ]
+}

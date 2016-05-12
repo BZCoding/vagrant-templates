@@ -1,0 +1,5 @@
+---
+
+## VIM install and setup
+- name: ensure VIM is installed
+  apt: name=vim state=present

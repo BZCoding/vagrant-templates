@@ -1,0 +1,6 @@
+---
+nginx_packages:
+    - nginx
+    - nginx-extras
+
+nginx_user: "www-data"

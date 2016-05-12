@@ -1,0 +1,15 @@
+---
+
+- name: Debian | install packages
+  apt: pkg={{ item }} state=installed
+  with_items: "{{ php_apache2_packages }}"
+  register: php_apache2_install
+
+- name: ensure PHP is enabled on Apache
+  apache2_module:
+    name: php5
+    state: present
+  notify:
+    - restart apache2
+  tags:
+    - harden

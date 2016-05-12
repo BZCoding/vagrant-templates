@@ -1,0 +1,4 @@
+---
+dependencies:
+  - { role: base }
+  - { role: rvm, rvm1_rubies: "{{ ruby_versions }}" }

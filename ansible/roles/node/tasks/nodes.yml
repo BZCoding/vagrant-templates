@@ -1,0 +1,29 @@
+---
+- name: list existing node versions
+  shell: 'source {{ nvm_profile }} || true && nvm ls'
+  args:
+    executable: /bin/bash
+  register: nvm_installed_nodes
+  ignore_errors: yes
+  when: nvm_binary.stat.exists
+  tags: nvm
+
+- debug: var=nvm_installed_nodes.stdout
+  tags: nvm
+
+- name: install nodes
+  shell: "source {{ nvm_profile }} || true && nvm install v{{ item }}"
+  args:
+    executable: /bin/bash
+  with_items: "{{ nvm_nodes }}"
+  register: nvm_install_result
+  tags: nvm
+
+- debug: var=nvm_install_result.msg
+  tags: nvm
+
+- name: set default alias
+  shell: 'source {{ nvm_profile }} || true && nvm alias default {{ nvm_node_default }}'
+  args:
+    executable: /bin/bash
+  tags: nvm

@@ -1,0 +1,62 @@
+---
+
+- name: ensure NVM dependencies are installed
+  apt: pkg={{ item }} update_cache=yes cache_valid_time=3600 state=present
+  with_items: "{{ nvn_deps }}"
+  tags: nvm
+
+- name: detect NVM binary
+  stat: path='{{ nvm_nvmsh }}'
+  register: nvm_binary
+  tags: nvm
+
+- debug: var=nvm_binary.stat.exists
+  tags: nvm
+
+- name: detect NVM installer
+  stat: path='{{ nvm_temp_download_path }}/nvm-installer.sh'
+  register: nvm_installer
+  tags: nvm
+
+- debug: var=nvm_installer.stat.exists
+  tags: nvm
+
+- name: detect current NVM version
+  shell: 'source {{ nvm_profile }} || true && nvm --version'
+  args:
+    executable: /bin/bash
+  changed_when: False
+  register: nvm_current_version
+  when: nvm_binary.stat.exists
+  tags: nvm
+
+- debug: var=nvm_current_version.stdout
+  tags: nvm
+
+- name: install NVM installer
+  get_url:
+    url: '{{ nvm_latest_installer }}'
+    dest: '{{ nvm_temp_download_path }}/nvm-installer.sh'
+  when: not nvm_installer.stat.exists
+  tags: nvm
+
+- name: configure NVM installer
+  file:
+    path: '{{ nvm_temp_download_path }}/nvm-installer.sh'
+    mode: 0755
+  when: not nvm_binary.stat.exists
+  tags: nvm
+
+- name: install NVM
+  shell: NVM_DIR="{{ nvm_install_dir }}" {{ nvm_temp_download_path }}/nvm-installer.sh
+  args:
+    executable: /bin/bash
+  when: not nvm_binary.stat.exists
+  tags: nvm
+
+- name: ensure NVM is in profiles
+  template:
+    src: nvm.sh.j2
+    dest: "{{ nvm_profile }}"
+    mode: 0644
+  tags: nvm

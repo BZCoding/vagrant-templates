@@ -1,0 +1,34 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+
+## Set default locale to UTF8
+- include: locale.yml
+  tags: locale
+
+## Update Cache
+- include: apt-update.yml
+  tags: update
+
+## Install Sudo
+- include: sudo.yml
+  tags: sudo
+
+## NTP install and setup
+- include: ntp.yml
+  tags: ntp
+
+## Timezone install and setup
+- include: timezone.yml
+  tags: timezone
+
+## Install cURL
+- include: curl.yml
+  tags: curl
+
+## VIM install and setup
+- include: vim.yml
+  tags: vim
+
+## Mailutils install and setup
+- include: mailutils.yml
+  tags: mail
