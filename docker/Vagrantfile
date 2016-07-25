@@ -23,7 +23,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.ssh.private_key_path = "#{ENV['HOME']}/.ssh/id_rsa"
 
   # VM definition
-  config.vm.define "trusty" do |trusty|
+  config.vm.define PROJECT do |trusty|
 
     # Box details
     # Note: consider hosting you own boxes (ie http://virtualboxes.loc/boxes/jessie64.box)
