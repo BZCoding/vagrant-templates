@@ -9,10 +9,11 @@
     become_method: sudo
 
     # Customize vars for Node or MySQL (see mysql playbook)
-    # vars:
+    vars:
+      nodejs_version: 10.x
 
     roles:
-      - { role: node, tags: ['node'] }
+      - { role: nodejs, tags: ['node'] }
 
       # You can add MySQL and MongoDB roles here...
       # - { role: mysql, tags: ['mysql'] }
@@ -25,4 +26,5 @@
       - name: Hello NodeBox
         action: shell echo "Hello Node Box!"
         register: result
-      - debug: var=result.stdout
+      - debug:
+          var: result.stdout

@@ -1,0 +1,5 @@
+---
+nodejs_version: 10.x
+
+nodejs_packages:
+  - nodejs

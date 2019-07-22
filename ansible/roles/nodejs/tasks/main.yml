@@ -1,0 +1,28 @@
+---
+
+- name: Ensure we have NodeJS Repo GPG key
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+
+- name: Ensure we have the NodeJS repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://deb.nodesource.com/node_{{ nodejs_version}} {{ ansible_lsb.codename }} main"
+    state: present
+    update_cache: yes
+
+- name: Ensure we have the NodeJS source code
+  apt_repository:
+    repo: "deb-src [arch=amd64] https://deb.nodesource.com/node_{{ nodejs_version}} {{ ansible_lsb.codename }} main"
+    state: present
+    update_cache: yes
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install required packages
+  apt:
+    pkg: "{{ nodejs_packages }}"
+    state: present
