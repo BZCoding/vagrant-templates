@@ -2,11 +2,36 @@
 # This playbook contains common plays that will be run on all nodes.
 
 ## Set default locale to UTF8
-- include: locale.yml
+- name: Set locale to UTF8
+  copy:
+    src: "etc_default_locale"
+    dest: "/etc/default/locale"
+    owner: "root"
+    group: "root"
+    mode: 0644
   tags: locale
 
 ## Update Cache
-- include: apt-update.yml
+- name: Update APT Cache and all installed packages to latest version
+  apt:
+     force_apt_get: true
+     update_cache: yes
+     upgrade: dist
+     autoremove: yes
+  tags: update
+
+- name: Update APT Cache
+  apt:
+    pkg:
+      - apt-transport-https
+      - software-properties-common
+      - python-apt
+      - aptitude
+      - wget
+    state: latest
+    force_apt_get: true
+    update_cache: yes
+    cache_valid_time: 3600
   tags: update
 
 ## Install Sudo
@@ -21,14 +46,23 @@
 - include: timezone.yml
   tags: timezone
 
-## Install cURL
-- include: curl.yml
-  tags: curl
+## Install cURL, Vim and Mailutils
+- name: Ensure basic utility packages are installed
+  apt:
+    pkg:
+      - curl
+      - vim
+      - mailutils
+    state: present
+  tags:
+    - curl
+    - vim
+    - mailutils
 
-## VIM install and setup
-- include: vim.yml
-  tags: vim
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
 
-## Mailutils install and setup
-- include: mailutils.yml
-  tags: mail
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes

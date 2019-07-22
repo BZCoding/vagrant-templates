@@ -1,0 +1,34 @@
+---
+
+  - hosts: docker
+
+    become: yes
+    become_user: root
+    become_method: sudo
+
+    roles:
+      - { role: docker }
+
+    tasks:
+
+      - name: ensure Docker images are present
+        docker_image:
+          name: "{{ item }}"
+          state: present
+          source: pull
+        with_items:
+          - hello-world
+
+      - name: run hello-world
+        command: docker run hello-world
+        register: result
+
+      - debug:
+          var: result.stdout
+
+      - name: Hello Docker
+        action: shell echo "Hello from Docker!"
+        register: result
+
+      - debug:
+          var: result.stdout

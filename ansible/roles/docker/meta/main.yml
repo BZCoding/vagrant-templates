@@ -1,0 +1,17 @@
+galaxy_info:
+  author: Vito Tardia
+  description: Docker module for production servers
+
+  license: MIT
+
+  min_ansible_version: 1.2
+  
+  platforms:
+    - name: Debian
+      versions:
+        - 9
+
+  galaxy_tags: []
+
+dependencies:
+  - { role: base }

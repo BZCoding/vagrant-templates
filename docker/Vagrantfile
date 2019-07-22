@@ -9,7 +9,7 @@ PROJECT = 'docker-dev'
 MEMORY = 512
 
 VAGRANTFILE_API_VERSION = 2
-Vagrant.require_version ">= 1.8.0"
+Vagrant.require_version ">= 2.2.0"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Cache software packages
@@ -19,96 +19,82 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      config.cache.enable :composer
   end
 
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
   # Use custom key path, leave commented until after first provision
   # config.ssh.private_key_path = "#{ENV['HOME']}/.ssh/id_rsa"
 
   # VM definition
-  config.vm.define PROJECT do |trusty|
+  config.vm.define PROJECT do |guest|
 
     # Box details
     # Note: consider hosting you own boxes (ie http://virtualboxes.loc/boxes/jessie64.box)
-    trusty.vm.box      = 'ubuntu/trusty64'
-    trusty.vm.box_url  = 'https://atlas.hashicorp.com/ubuntu/boxes/trusty64'
-    trusty.vm.hostname = PROJECT
+    guest.vm.box      = 'debian/stretch64'
+    guest.vm.hostname = PROJECT
 
     # Networking setup
-    trusty.vm.network "private_network", type: "dhcp"
+    guest.vm.network "private_network", type: "dhcp"
 
     # Share Docker port
-    trusty.vm.network :forwarded_port, guest: 2375, host: 2375
-    trusty.vm.network :forwarded_port, guest: 2376, host: 2376
+    guest.vm.network :forwarded_port, guest: 2375, host: 2375
+    guest.vm.network :forwarded_port, guest: 2376, host: 2376
 
     # Basic port forwarding (HTTP, HTTPS)
-    trusty.vm.network :forwarded_port, guest: 80, host: 8000, auto_correct: true
-    trusty.vm.network :forwarded_port, guest: 443, host: 8443, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 80, host: 8000, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 443, host: 8443, auto_correct: true
 
     # Standard Node/Ruby ports
-    trusty.vm.network :forwarded_port, guest: 3000, host: 3000, auto_correct: true
-    trusty.vm.network :forwarded_port, guest: 5000, host: 5000, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 3000, host: 3000, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 5000, host: 5000, auto_correct: true
 
     # MySQL/MongoDB ports
-    trusty.vm.network :forwarded_port, guest: 3306, host: 3306, auto_correct: true
-    trusty.vm.network :forwarded_port, guest: 27017, host: 27017, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 3306, host: 3306, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 27017, host: 27017, auto_correct: true
 
     # Share Home directory with the same path on VM (it may require your password on startup)
     # You could enable NFS sharing protocol, but it has some problems with Ruby bundle installs
-    trusty.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home" #, :nfs => true, :mount_options => ['nolock,vers=3,udp']
+    guest.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home" #, :nfs => true, :mount_options => ['nolock,vers=3,udp']
 
     # VM Provider specific settings for VirtualBox
-    trusty.vm.provider "virtualbox" do |vb|
+    guest.vm.provider "virtualbox" do |vb|
 
       # Share VPN connections
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
 
       vb.name = PROJECT
 
-      # Display the VirtualBox GUI when booting the machine
-      # vb.gui = true
-
       # Customize the amount of memory on the VM:
       vb.memory = "#{MEMORY}"
     end
 
     # Add custom key
-    trusty.vm.provision :file, :source => "#{ENV['HOME']}/.ssh/id_rsa.pub", :destination => "/tmp/vagrantfile-pubkey"
-    trusty.vm.provision :shell, :privileged => false, :inline => <<-SHELL
+    guest.vm.provision :file, :source => "#{ENV['HOME']}/.ssh/id_rsa.pub", :destination => "/tmp/vagrantfile-pubkey"
+    guest.vm.provision :shell, :privileged => false, :inline => <<-SHELL
       cat /tmp/vagrantfile-pubkey >> $HOME/.ssh/authorized_keys
       SHELL
 
-    # Enable provisioning with a shell script.
-    config.vm.provision "shell", inline: <<-SHELL
-
-      export LC_ALL="en_US.UTF-8"
-      export DEBIAN_FRONTEND=noninteractive
-
-      # fix invalid locale settings
-      echo "LANG=\"en_US.UTF-8\"
-      LC_ALL=\"en_US.UTF-8\"" > /etc/default/locale
-
-      # update repos
-      apt-get update
-      apt-get upgrade -y
-
-      # make sure wget is installed and install Docker from site
-      apt-get -y install wget
-      wget -qO- https://get.docker.com/ | sh
-
-      # add vagrant user to docker group
-      gpasswd -a vagrant docker
-
-      # edit DNSs and allow connections from external (dev only, please!)
-      echo 'DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4 -H 0.0.0.0:2375"' >> /etc/default/docker
-
-      # restart service
-      service docker restart
-
-      # cleanup unused packages
-      apt-get autoremove -y
-
-      # test Docker installation
-      docker run hello-world
-
-    SHELL
+    # Provisioning with Ansible
+    guest.vm.provision "ansible" do |ansible|
+      # Vagrant auto generates the inventory file, uncomment below to use yours
+      # ansible.inventory_path = "hosts"
+      ansible.playbook = "ansible/docker.yml"
+      ansible.ask_vault_pass = false
+      ansible.become = true
+      ansible.compatibility_mode = '2.0'
+      ansible.host_key_checking = false
+      ansible.verbose = false
+      ansible.groups = {
+        "docker" => PROJECT
+      }
+      ansible.extra_vars = {
+          "docker_users" => ['vagrant']
+      }
+    end
   end
-
 end

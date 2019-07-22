@@ -36,7 +36,7 @@ A sample project directory can be structured like:
 ## Requirements
 
  - [Ansible 2.x](https://www.ansible.com/get-started) and related dependencies
- - [Vagrant 1.8.x](https://www.vagrantup.com/) and related dependencies
+ - [Vagrant 2.2.x](https://www.vagrantup.com/) and related dependencies
  - [VirtualBox](https://www.virtualbox.org/)
 
 ## Vagrant Tips
@@ -53,7 +53,9 @@ config.vbguest.no_remote = true
 
 ## Useful Vagrant plugins
 
- - [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager): manages the `/etc/hosts` file on guest machines (and optionally the host)
- - [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns): allows you to configure a dns-server managing a development subdomain
- - vagrant-cachier: caches package managers files
- - vagrant-remove-old-box-versions
+ - [`vagrant-hostmanager`](https://github.com/devopsgroup-io/vagrant-hostmanager): manages the `/etc/hosts` file on guest machines (and optionally the host)
+ - [`vagrant-dns`](https://github.com/BerlinVagrant/vagrant-dns): allows you to configure a dns-server managing a development subdomain
+ - `vagrant-cachier`: caches package managers files
+ - `vagrant-remove-old-box-versions`
+ - `vagrant-share` (provides `virtualbox` filesystem for synced folders)
+ - `vagrant-vbguest` (automatically installs/updates Guest Additions on boot)

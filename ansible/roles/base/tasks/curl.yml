@@ -1,5 +1,0 @@
----
-
-## Install cURL
-- name: ensure cURL is installed
-  apt: name=curl state=present

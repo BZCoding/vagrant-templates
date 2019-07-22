@@ -1,9 +1,16 @@
 ---
+# Handler to handle common notifications. Handlers are called by other plays.
+# See http://docs.ansible.com/playbooks_intro.html for more information about handlers.
+
 - name: restart ntp
-  service: name=ntp state=restarted
+  service:
+    name: ntp
+    state: restarted
 
 - name: restart iptables
-  service: name=iptables state=restarted
+  service:
+    name: iptables
+    state: restarted
 
 - name: update timezone
   command: dpkg-reconfigure --frontend noninteractive tzdata

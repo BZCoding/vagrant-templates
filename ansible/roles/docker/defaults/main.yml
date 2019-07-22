@@ -1,0 +1,19 @@
+---
+# defaults file for docker role
+
+docker_users: []
+
+docker_deps:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg2
+  - software-properties-common
+  - python-pip
+  - python-virtualenv
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-compose

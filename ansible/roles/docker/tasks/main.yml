@@ -1,0 +1,44 @@
+---
+# tasks file for docker roles
+
+# https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-using-the-repository
+- name: ensure Debian dependecies are installed
+  apt:
+    pkg: "{{ docker_deps }}"
+    state: latest
+
+- name: ensure we have Docker official GPG key
+  apt_key:
+    id: 0EBFCD88
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: ensure we have Docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable
+    state: present
+  when: ansible_distribution == 'Debian'
+
+- name: ensure we have Docker repo
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+    state: present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: ensure Docker is installed
+  apt:
+    pkg: "{{ docker_packages }}"
+    state: present
+    update_cache: yes
+
+- name: ensure we have a docker group
+  group:
+    name: docker
+    state: present
+
+- name: ensure Docker can be run by designated users
+  user:
+    name: "{{item}}"
+    groups: docker
+    append: yes
+  with_items: "{{ docker_users }}"
