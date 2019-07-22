@@ -1,46 +1,52 @@
 ---
 # tasks file for mysql
-- name: generate random password
+- name: Generate random password
   shell: < /dev/urandom| head --bytes 32 | sha1sum | cut --fields 1 --delimiter ' '
   register: random_password
   when: mysql_root_password is not defined
   changed_when: false
 
 - name: set mysql_server_id based on ip address
-  set_fact: mysql_server_id={{ ansible_default_ipv4.address|regex_replace("^.{0,3}|[.]") }}
+  set_fact:
+    mysql_server_id: '{{ ansible_default_ipv4.address|regex_replace("^.{0,3}|[.]") }}'
   when: mysql_server_id is not defined
 
-- name: include Debian specific tasks
+- name: Include Debian specific tasks
   include: debian.yml
   when: ansible_os_family == 'Debian'
 
-- name: check for unsupported target operating system
+- name: Check for unsupported target operating system
   fail:
     msg: "The operating system of the target machine ({{ inventory_hostname }}) is not currently supported."
   when: mysql_supported_os is not defined
 
 - name: ensure mysql is started
-  service: name={{ mysql_service_name }} state=started enabled=yes
+  service:
+    name: "{{ mysql_service_name }}"
+    state: started
+    enabled: yes
 
-- name: configure root user password
+# Allow root@localhost (production)
+- name: configure root user password (prod)
   mysql_user:
     name: root
     password: "{% if mysql_root_password is defined %}{{ mysql_root_password }}{% else %}{{ random_password.stdout }}{% endif %}"
     state: present
     priv: "*.*:ALL,GRANT"
   when: mysql_install.changed
-  notify: mysql restart
+
+# Disallow root@% in production
+- name: ensure root cannot login from everywhere (prod)
+  mysql_user:
+    name: root
+    state: absent
+    host: "%"
 
 - name: configure the new password
-  template: src=client_my.cnf.j2 dest=~/.my.cnf owner=root group=root mode=0600
+  template:
+    src: client_my.cnf.j2
+    dest: ~/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
   when: mysql_root_password is defined or mysql_install.changed
-
-- name: allow remote access to root
-  mysql_user:
-    name: root
-    password: "{% if mysql_root_password is defined %}{{ mysql_root_password }}{% else %}{{ random_password.stdout }}{% endif %}"
-    state: present
-    priv: "*.*:ALL,GRANT"
-    host: "%"
-  when: mysql_install.changed
-  notify: mysql restart

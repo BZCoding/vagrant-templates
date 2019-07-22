@@ -10,7 +10,7 @@ PROJECT = 'mysql-box'
 ## End Provision settings
 
 VAGRANTFILE_API_VERSION = 2
-Vagrant.require_version ">= 1.8.0"
+Vagrant.require_version ">= 2.2.0"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Cache software packages
@@ -20,32 +20,39 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      config.cache.enable :composer
   end
 
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
   # Use custom key path, leave commented until after first provision
   # config.ssh.private_key_path = "#{ENV['HOME']}/.ssh/id_rsa"
 
   # VM definition
-  config.vm.define PROJECT do |jessie|
+  config.vm.define PROJECT do |guest|
 
     # Box details
-    # Note: consider hosting you own boxes (ie http://virtualboxes.loc/boxes/jessie64.box)
-    jessie.vm.box      = 'debian/jessie64'
-    jessie.vm.box_url  = 'https://atlas.hashicorp.com/debian/boxes/jessie64'
-    jessie.vm.hostname = PROJECT
+    # Note: consider hosting you own boxes (ie http://virtualboxes.loc/boxes/stretch64.box)
+    guest.vm.box      = 'debian/stretch64'
+    guest.vm.hostname = PROJECT
 
     # Networking setup
-    jessie.vm.network "private_network", type: "dhcp"
+    guest.vm.network "private_network", type: "dhcp"
 
     # MySQL port forwarding
-    jessie.vm.network :forwarded_port, guest: 3306, host: 3306, auto_correct: true
+    guest.vm.network :forwarded_port, guest: 3306, host: 3306, auto_correct: true
 
     # Disable default Vagrant share, turn it on only when needed (ie copy large files)
-    jessie.vm.synced_folder ".", "/vagrant", disabled: false
+    guest.vm.synced_folder ".", "/vagrant", disabled: false
 
     # You may want share MySQL databases between the host and the guest...
-    jessie.vm.synced_folder "/Users/Shared/mysql", "/var/lib/mysql", disabled: true
+    guest.vm.synced_folder "/Users/Shared/mysql", "/var/lib/mysql", disabled: true
 
     # VM Provider specific settings for VirtualBox
-    jessie.vm.provider "virtualbox" do |vb|
+    guest.vm.provider "virtualbox" do |vb|
 
       # Share VPN connections
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -57,13 +64,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     # Add custom key
-    jessie.vm.provision :file, :source => "#{ENV['HOME']}/.ssh/id_rsa.pub", :destination => "/tmp/vagrantfile-pubkey"
-    jessie.vm.provision :shell, :privileged => false, :inline => <<-SHELL
+    guest.vm.provision :file, :source => "#{ENV['HOME']}/.ssh/id_rsa.pub", :destination => "/tmp/vagrantfile-pubkey"
+    guest.vm.provision :shell, :privileged => false, :inline => <<-SHELL
       cat /tmp/vagrantfile-pubkey >> $HOME/.ssh/authorized_keys
       SHELL
 
     # Provisioning with Ansible
-    jessie.vm.provision "ansible" do |ansible|
+    guest.vm.provision "ansible" do |ansible|
       # Vagrant auto generates the inventory file, uncomment below to use yours
       # ansible.inventory_path = "hosts"
 

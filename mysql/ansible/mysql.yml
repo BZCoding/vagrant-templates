@@ -19,6 +19,26 @@
       mysql_delete_databases:
         - bar
 
+      # Users and privileges (be sure to use good passwords in production)
+      mysql_users:
+        - name: admin
+          host: localhost
+          password: admin
+          priv: "*.*:ALL,GRANT"
+          state: present
+        - name: app
+          host: "%"
+          host_all: yes
+          password: foobar
+          priv: "foo.*:ALL,GRANT"
+          state: present
+        - name: app
+          host: "%"
+          host_all: yes
+          password: foobar
+          priv: "bar.*:ALL,GRANT"
+          state: present
+
     roles:
       - {role: mysql }
 
@@ -31,6 +51,17 @@
         with_items: "{{ mysql_databases }}"
         when: mysql_databases is defined
         tags: import
+
+      - name: ensure MySQL users and privileges are present
+        mysql_user:
+          name: "{{ item.name }}"
+          host: "{{ item.host }}"
+          password: "{{ item.password }}"
+          priv: "{{ item.priv }}"
+          state: "{{ item.state }}"
+          append_privs: yes
+        with_items: "{{ mysql_users }}"
+        notify: restart mysql
 
       - name: copy database import files
         copy:
