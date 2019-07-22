@@ -1,0 +1,44 @@
+# mongodb.conf
+# edited by Ansible
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# Where to store the data.
+storage:
+  dbPath: {{ mongodb_dbpath }}
+
+  # Enable journaling, http://www.mongodb.org/display/DOCS/Journaling
+  journal:
+    enabled: true
+
+# Where to log
+systemLog:
+  # Redirect to Syslog
+  destination: syslog
+  syslogFacility: daemon
+
+# Network interfaces
+net:
+  bindIp: {{ mongodb_bind_address|default('127.0.0.1') }}
+  port: {{ mongodb_port }}
+
+# How the process runs
+processManagement:
+  timeZoneInfo: /usr/share/zoneinfo
+
+security:
+  authorization: {{ mongodb_authorization|default('disabled') }}
+  authenticationMechanisms:
+    - SCRAM-SHA-1
+
+#operationProfiling:
+
+#replication:
+
+#sharding:
+
+## Enterprise-Only Options:
+
+#auditLog:
+
+#snmp:

@@ -1,3 +1,18 @@
 ---
+galaxy_info:
+  author: Vito Tardia
+  description: MongoDB role for development
+
+  license: MIT
+
+  min_ansible_version: 1.2
+
+  platforms:
+    - name: Debian
+      versions:
+        - 9
+
+  galaxy_tags: []
+
 dependencies:
   - { role: base }

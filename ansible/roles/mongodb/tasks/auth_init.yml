@@ -1,0 +1,62 @@
+---
+# Auth init for MongoDB
+# See https://github.com/UnderGreen/ansible-role-mongodb/blob/master/tasks/auth_initialization.yml
+
+- name: Use different mongod.conf for auth initialization
+  template:
+    src: mongod_init.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart mongodb service
+  service:
+    name: "{{ mongodb_service_name }}"
+    state: restarted
+
+- name: wait MongoDB port is listening
+  wait_for:
+    host: "{{ mongodb_bind_address }}"
+    port: "{{ mongodb_port }}"
+    delay: 5
+    state: started
+
+- name: create administrative user siteUserAdmin
+  mongodb_user:
+    database: admin
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    update_password: always
+    roles: "{{ item.roles }}"
+    login_port: "{{ mongodb_port }}"
+  with_items:
+    - {
+        name: "{{ mongodb_admin_user }}",
+        password: "{{ mongodb_admin_password }}",
+        roles: "root,readWriteAnyDatabase,userAdminAnyDatabase,dbOwner,dbAdminAnyDatabase,clusterAdmin"
+      }
+  no_log: false
+
+# can create other users here...
+
+- name: Move back mongod.conf
+  template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Restart mongodb service
+  service:
+    name: "{{ mongodb_service_name }}"
+    state: restarted
+
+- name: Wait MongoDB port is listening
+  wait_for:
+    host: "{{ item }}"
+    port: "{{ mongodb_port }}"
+    delay: 5
+    state: started
+  with_items: "{{ mongodb_bind_address.split(',') | map('replace', '0.0.0.0', '127.0.0.1') | list }}"

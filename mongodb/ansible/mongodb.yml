@@ -1,12 +1,9 @@
 ---
-
-# A sample MongoDB playbook
-
   - hosts: mongodb
 
     become: yes
-    become_user: "root"
-    become_method: "sudo"
+    become_user: root
+    become_method: sudo
 
     roles:
       - { role: mongodb }
@@ -16,4 +13,5 @@
       - name: Hello MongoDB
         action: shell echo "Hello MongoDB!"
         register: result
-      - debug: var=result.stdout
+      - debug:
+          var: result.stdout

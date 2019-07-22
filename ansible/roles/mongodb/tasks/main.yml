@@ -1,13 +1,59 @@
 ---
 
+- name: Ensure we have Repo GPG key
+  apt_key:
+    id: "9DA31620334BD75D9DCB49F368818C72E52529D4"
+    keyserver: hkp://keyserver.ubuntu.com:80
+    state: present
+
+- name: Ensure we have MongoDB repo(s)
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - deb http://repo.mongodb.org/apt/debian {{ ansible_lsb.codename }}/mongodb-org/4.0 main
+
 - name: Debian | install packages
-  apt: pkg={{ item }} state=installed
-  with_items: "{{ mongodb_packages }}"
+  apt:
+    pkg: "{{ mongodb_packages }}"
+    state: present
   register: mongodb_install
 
-- name: ensure mongodb is started
-  service: name={{ mongodb_service_name }} state=started enabled=yes
+# In case we need to fix the installation to a specific version
+- name: Pin packages
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items: "{{ mongodb_pinned_packages }}"
 
-- name: Debian | configure the service
-  template: src=mongodb.conf.j2 dest=/etc/mongodb.conf owner=root group=root mode=0644
+- name: Ensure mongodb is running
+  service:
+    name: "{{ mongodb_service_name }}"
+    state: started
+    enabled: yes
+
+- name: configure the service
+  template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: 0644
   notify: restart mongodb
+
+# In case we want authentication (we should)
+- name: Check where admin user already exists
+  command: >
+    mongo --quiet -u {{ mongodb_admin_user }} \
+          -p {{ mongodb_admin_password }} --port {{ mongodb_port }} --eval 'db.version()' admin
+  register: mongodb_user_admin_check
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+  when: mongodb_authorization == 'enabled'
+  no_log: true
+
+- name: Include authorization configuration
+  include: auth_init.yml
+  when: ( mongodb_authorization == 'enabled' and mongodb_user_admin_check.rc != 0 )
