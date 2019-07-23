@@ -1,0 +1,88 @@
+composer_install_dir: /usr/local/composer
+composer_bin_location: /usr/local/bin/composer
+
+# We won't install php7.3 package because it includes Apache
+php_shared_packages:
+  - mysql-client
+  - bzip2
+  - zip
+  - unzip
+  - libsodium23
+  - ssl-cert
+  - php7.3-common
+  - php7.3-mysql
+  - php7.3-cli
+  - php7.3-curl
+  - php7.3-json
+  - php7.3-opcache
+  - php7.3-readline
+  - php7.3-intl
+  - php7.3-mbstring
+  - php7.3-memcached
+  - php7.3-zip
+  - php7.3-xml
+  - php-apcu
+  - php-pear
+  - php-ssh2
+  - php7.3-bcmath
+  - php-mongodb
+
+php_dev_packages:
+  - libssl-dev
+  - zlib1g-dev
+  - libicu-dev
+  - php7.3-dev
+  - php-xdebug
+  - php-ast
+
+php_fpm_packages:
+  - php7.3-fpm
+
+php_enable_dev_packages: false
+php_default_version: "7.3"
+php_enable_fpm: true
+php_fpm_service: "php{{ php_default_version }}-fpm"
+
+# Basic
+php_memory_limit: 128M
+
+php_timezone: UTC
+
+php_default_charset: "UTF-8"
+
+# Security
+php_expose_php: Off
+
+php_allow_url_fopen: Off
+
+php_enable_dl: Off
+
+php_assert_active: Off
+
+php_mail_add_x_header: Off
+
+# Uploads
+php_upload_max_filesize: 15M
+
+php_post_max_size: 8M
+
+php_max_file_uploads: 20
+
+
+# Super globals
+php_variables_order: EGPCS
+
+php_request_order: EGP
+
+# Error stuff
+php_error_reporting: "E_ALL & ~E_DEPRECATED & ~E_STRICT"
+
+php_html_errors: On
+
+php_log_errors: On
+
+php_display_errors: Off
+
+php_display_startup_errors: Off
+
+php_error_log: /var/log/php-errors.log

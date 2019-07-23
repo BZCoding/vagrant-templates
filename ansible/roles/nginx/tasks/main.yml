@@ -1,9 +1,10 @@
 ---
-# Installs and set up Nginx
+# Installs and set up Nginx as frontend proxy
 
-- name: Debian | install packages
-  apt: pkg={{ item }} state=installed
-  with_items: "{{ nginx_packages }}"
+- name: Install packages
+  apt:
+    pkg: "{{ nginx_packages }}"
+    state: present
   register: nginx_install
   tags: nginx
 
@@ -30,5 +31,8 @@
   tags: nginx
 
 - name: Start nginx service
-  service: name=nginx state=started enabled=yes
+  service:
+    name: nginx
+    state: started
+    enabled: yes
   tags: nginx

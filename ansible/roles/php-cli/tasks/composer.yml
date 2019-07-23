@@ -1,5 +1,5 @@
 ---
-- name: set composer directory permissions
+- name: modify directory
   file:
     path: "{{ composer_install_dir }}"
     state: directory

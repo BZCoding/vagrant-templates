@@ -1,4 +1,0 @@
----
-
-php_nginx_packages:
-    - php5-fpm

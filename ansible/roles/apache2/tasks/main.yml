@@ -12,7 +12,7 @@
 - name: Use correct Apache default sitename
   set_fact: apache2_default_site="{{ '000-default' if ((ansible_distribution == 'Debian') and (ansible_distribution_version >= '8')) else 'default' }}"
 
-- name: Install apache2
+- name: Install Apache2
   apt:
     name: apache2
     cache_valid_time: 86400
@@ -20,6 +20,42 @@
     install-recommends: no
     update_cache: yes
     state: present
+
+- name: Install Apache2 Utils
+  apt:
+    name: apache2-utils
+    cache_valid_time: 86400
+    force: yes
+    install-recommends: no
+    update_cache: yes
+    state: present
+
+- name: Copy main configuration file
+  template:
+    src: apache2.conf.j2
+    dest: "/etc/apache2/apache2.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart apache2
+  tags:
+    - harden
+
+- name: Copy ports configuration file
+  copy:
+    src: "ports.conf"
+    dest: "/etc/apache2/ports.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: Copy logrotate configuration
+  template:
+    src: logrotate.conf.j2
+    dest: "/etc/logrotate.d/apache2"
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Harden Apache security configuration
   template:
@@ -32,13 +68,6 @@
   tags:
     - harden
 
-- name: Enable Apache security configuration
-  command: a2enconf security.conf
-  args:
-    creates: /etc/apache2/conf-enabled/security.conf
-  notify:
-    - reload apache2
-
 - name: Disable the default sites
   command: a2dissite {{ apache2_default_site }}
   args:
@@ -49,13 +78,9 @@
     - harden
 
 - name: Disable Apache modules
-  command: "a2dismod -f {{ item }}"
+  command: "a2dismod -q -f {{ item }}"
   args:
-    removes: "/etc/apache2/mods-enabled/{{ item }}"
-  # Should be better but does not work
-  # apache2_module:
-  #   name: "{{ item }}"
-  #   state: absent
+    removes: "/etc/apache2/mods-enabled/{{ item }}.*"
   with_items: "{{ apache2_modules_disabled|default([]) }}"
   notify:
     - restart apache2
@@ -63,11 +88,47 @@
     - harden
 
 - name: Enable Apache modules
-  apache2_module:
-    name: "{{ item }}"
-    state: present
+  command: "a2enmod -q -f {{ item }}"
+  args:
+    creates: "/etc/apache2/mods-enabled/{{ item }}.*"
   with_items: "{{ apache2_modules_enabled|default([]) }}"
   notify:
     - restart apache2
   tags:
     - harden
+
+- name: Enable Apache security configuration
+  command: a2enconf security.conf
+  args:
+    creates: /etc/apache2/conf-enabled/security.conf
+  notify:
+    - restart apache2
+
+- name: Ensure Apache document root exists
+  file:
+    path: "{{apache2_www_folder}}"
+    state: directory
+    owner: "{{ apache2_doc_root_owner }}"
+    group: "{{ apache2_doc_root_group }}"
+    mode: 0755
+
+## Allow deploy user to start/stop/restart apache without password
+- name: backup sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.apache2.tmp
+  register: sudoers_apache2_backup
+  args:
+    creates: /etc/sudoers.apache2.tmp
+  when: apache2_doc_root_owner != 'root'
+
+- name: make sure deploy user can restart Apache
+  lineinfile:
+    dest: /etc/sudoers.apache2.tmp
+    state: present
+    regexp: '^{{ apache2_doc_root_owner }}'
+    line: '{{ apache2_doc_root_owner }} ALL = (root) NOPASSWD: /etc/init.d/apache2'
+  when: apache2_doc_root_owner != 'root'
+
+- name: sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.apache2.tmp && cp -f /etc/sudoers.apache2.tmp /etc/sudoers
+  register: sudoers_checked
+  when: sudoers_apache2_backup is defined and sudoers_apache2_backup.changed == true

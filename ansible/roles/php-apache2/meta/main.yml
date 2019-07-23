@@ -1,4 +1,4 @@
 ---
 dependencies:
-  - { role: php }
+  - { role: php-cli }
   - { role: apache2 }

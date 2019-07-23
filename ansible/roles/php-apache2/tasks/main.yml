@@ -1,13 +1,14 @@
 ---
 
 - name: Debian | install packages
-  apt: pkg={{ item }} state=installed
-  with_items: "{{ php_apache2_packages }}"
+  apt:
+    pkg: "{{ php_apache2_packages }}"
+    state: present
   register: php_apache2_install
 
 - name: ensure PHP is enabled on Apache
   apache2_module:
-    name: php5
+    name: php7
     state: present
   notify:
     - restart apache2

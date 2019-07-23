@@ -5,11 +5,14 @@
   - hosts: php
 
     become: yes
-    become_user: "root"
-    become_method: "sudo"
+    become_user: root
+    become_method: sudo
 
     # Customize vars for Apache, PHP or MySQL (see mysql playbook)
-    # vars:
+    vars:
+      php_enable_dev_packages: true
+      php_enable_fpm: false
+      php_allow_url_fopen: On # Safe for dev, disable on prod
 
     roles:
       - { role: php-apache2, tags: ['php','apache2'] }
@@ -50,11 +53,16 @@
       - name: Hello PHP
         action: shell echo "Hello PHP!"
         register: result
-      - debug: var=result.stdout
+      - debug:
+          var: result.stdout
 
     handlers:
       - name: restart apache2
-        action: service name=apache2 state=restarted
+        service:
+          name: apache2
+          state: restarted
 
       - name: reload apache2
-        action: service name=apache2 state=reloaded
+        service:
+          name: apache2
+          state: reloaded

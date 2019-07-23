@@ -1,0 +1,75 @@
+---
+
+- name: Ensure we have PHP Repo GPG key
+  apt_key:
+    url: https://packages.sury.org/php/apt.gpg
+    state: present
+
+- name: Ensure we have the PHP repo
+  apt_repository:
+    repo: deb [arch=amd64] https://packages.sury.org/php/ {{ ansible_lsb.codename }} main
+    state: present
+    update_cache: yes
+
+- name: Install shared packages
+  apt:
+    pkg: "{{ php_shared_packages }}"
+    state: present
+  register: php_install
+
+- name: Install dev packages
+  apt:
+    pkg: "{{ php_dev_packages }}"
+    state: present
+  when: php_enable_dev_packages == true
+  register: php_dev_install
+
+- name: Install fpm packages
+  apt:
+    pkg: "{{ php_fpm_packages }}"
+    state: present
+  when: php_enable_fpm == true
+  register: php_fpm_install
+
+- name: Ensure PHP-FPM is enabled
+  service:
+    name: "{{ php_fpm_service }}"
+    state: started
+    enabled: yes
+  when: php_enable_fpm == true
+
+- name: Set default PHP
+  alternatives:
+    name: php
+    path: "/usr/bin/php{{ php_default_version }}"
+
+- name: Copy config file for CLI
+  template:
+    src: php.ini.j2
+    dest: "/etc/php/{{ php_default_version }}/cli/php.ini"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy config file for FPM
+  template:
+    src: php.ini.j2
+    dest: "/etc/php/{{ php_default_version }}/fpm/php.ini"
+    owner: root
+    group: root
+    mode: 0644
+  when: php_enable_fpm == true
+  notify: restart php-fpm
+
+- name: Copy logrotate configuration
+  template:
+    src: logrotate.conf.j2
+    dest: "/etc/logrotate.d/php"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install composer
+  include: composer.yml
+  tags:
+    - composer

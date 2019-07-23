@@ -6,14 +6,14 @@ apache2_modules_disabled:
   - authn_anon
   - cgi
   - dav
-  - env
   - negotiation
-  - setenvif
   - status
   - userdir
 
 apache2_modules_enabled:
   - alias
+  - env
+  - setenvif # required by SSL mod
   - auth_digest
   - authz_host
   - deflate
@@ -22,3 +22,8 @@ apache2_modules_enabled:
   - reqtimeout
   - rewrite
   - ssl
+  - unique_id
+
+apache2_www_folder: /var/www
+apache2_doc_root_owner: root
+apache2_doc_root_group: root

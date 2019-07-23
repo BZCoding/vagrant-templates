@@ -1,6 +1,13 @@
 ---
+# Handler to handle common notifications. Handlers are called by other plays.
+# See http://docs.ansible.com/playbooks_intro.html for more information about handlers.
+
 - name: restart nginx
-  service: name=nginx state=restarted
+  service:
+    name: nginx
+    state: restarted
 
 - name: reload nginx
-  service: name=nginx state=reloaded
+  service:
+    name: nginx
+    state: reloaded

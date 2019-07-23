@@ -1,0 +1,19 @@
+/var/log/apache2/*.log {
+    daily
+    missingok
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+    sharedscripts
+    postrotate
+        if /etc/init.d/apache2 status > /dev/null ; then \
+            /etc/init.d/apache2 reload > /dev/null; \
+        fi;
+    endscript
+    prerotate
+        if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+            run-parts /etc/logrotate.d/httpd-prerotate; \
+        fi; \
+    endscript
+}

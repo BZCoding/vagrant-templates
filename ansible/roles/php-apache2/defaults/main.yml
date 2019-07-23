@@ -1,4 +1,4 @@
 ---
 
 php_apache2_packages:
-    - libapache2-mod-php5
+    - libapache2-mod-php7.3

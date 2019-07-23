@@ -9,10 +9,14 @@
     become_method: sudo
 
     # Customize vars for Nginx, PHP or MySQL (see mysql playbook)
-    # vars:
+    vars:
+      php_enable_dev_packages: true
+      php_enable_fpm: true
+      php_allow_url_fopen: On # Safe for dev, disable on prod
 
     roles:
-      - { role: php-nginx, tags: ['php','nginx'] }
+       - php-cli
+       - nginx
 
       # You can add MySQL and MongoDB roles here...
       # - { role: mysql, tags: ['mysql'] }
@@ -42,11 +46,16 @@
       - name: Hello PHP
         action: shell echo "Hello PHP!"
         register: result
-      - debug: var=result.stdout
+      - debug:
+          var: result.stdout
 
     handlers:
       - name: restart nginx
-        service: name=nginx state=restarted
+        service:
+          name: nginx
+          state: restarted
 
       - name: reload nginx
-        service: name=nginx state=reloaded
+        service:
+          name: nginx
+          state: reloaded
