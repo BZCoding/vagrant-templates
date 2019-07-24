@@ -10,9 +10,8 @@
 
 - name: Install rubies
   command: '{{ rvm1_rvm }} install {{ item.item }} {{ rvm1_ruby_install_flags }}'
-  when: rvm1_rubies and item.rc != 0
+  when: rvm1_rubies and item.rc|default(0) != 0
   with_items: '{{ detect_rubies.results }}'
-  become_user: '{{ rvm1_user }}'
 
 - name: Detect default ruby version
   command: '{{ rvm1_rvm }} alias list default'
@@ -21,16 +20,25 @@
 
 - name: Select default ruby
   command: '{{ rvm1_rvm }} alias create default {{ rvm1_default_ruby_version }}'
-  when: detect_default_ruby_version.stdout == '' or
+  when: detect_default_ruby_version.stdout|default() == '' or
         rvm1_default_ruby_version not in detect_default_ruby_version.stdout
+
+- name: Detect installed ruby patch number
+  shell: >
+    {{ rvm1_rvm }} list strings | grep {{ item }} | tail -n 1
+  with_items: '{{ rvm1_rubies }}'
+  changed_when: False
+  register: ruby_patch
+  check_mode: no # Run in normal mode when in --check mode (http://docs.ansible.com/ansible/playbooks_checkmode.html)
 
 - name: Install bundler if not installed
   shell: >
-    {{ rvm1_install_path }}/wrappers/{{ item }}/gem list
-    | if ! grep "^bundler " ; then {{ rvm1_install_path }}/wrappers/{{ item }}/gem install bundler ; fi
+    ls {{ rvm1_install_path }}/wrappers/{{ item.stdout }}
+    | if ! grep "^bundler " ; then {{ rvm1_install_path }}/wrappers/{{ item.stdout }}/gem install bundler ; fi
   args:
-    creates: '{{ rvm1_install_path }}/wrappers/{{ item }}/bundler'
-  with_items: '{{ rvm1_rubies }}'
+    creates: '{{ rvm1_install_path }}/wrappers/{{ item.stdout }}/bundler'
+  with_items: '{{ ruby_patch.results }}'
+  when: rvm1_bundler_install
   register: bundler_install
   changed_when: '"Successfully installed bundler" in bundler_install.stdout'
 
@@ -39,10 +47,20 @@
     state: 'link'
     src: '{{ rvm1_install_path }}/wrappers/default/{{ item }}'
     dest: '{{ rvm1_symlink_to }}/{{ item }}'
-    owner: 'root'
-    group: 'root'
+    owner: '{{ root_user }}'
+    group: '{{ root_group }}'
   when: not '--user-install' in rvm1_install_flags
   with_items: '{{ rvm1_symlink_binaries }}'
+
+- name: Symlink bundler binaries on the system path
+  file:
+    state: 'link'
+    src: '{{ rvm1_install_path }}/wrappers/default/{{ item }}'
+    dest: '{{ rvm1_symlink_to }}/{{ item }}'
+    owner: '{{ root_user }}'
+    group: '{{ root_group }}'
+  when: not '--user-install' in rvm1_install_flags and rvm1_bundler_install
+  with_items: '{{ rvm1_symlink_bundler_binaries }}'
 
 - name: Detect if ruby version can be deleted
   command: '{{ rvm1_rvm }} {{ rvm1_delete_ruby }} do true'

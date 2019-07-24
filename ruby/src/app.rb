@@ -1,4 +1,4 @@
-require_relative 'bundle/bundler/setup'
+require 'bundler/setup'
 require 'sinatra'
 require "sinatra/json"
 

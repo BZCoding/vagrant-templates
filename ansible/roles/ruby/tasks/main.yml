@@ -1,12 +1,20 @@
 ---
 - name: Install Git
-  apt: name=git state=present
+  apt: 
+    pkg: git
+    state: present
   tags: git
 
 - name: Install Node.js # Required for JS parsing
-  apt: name=nodejs state=present
+  apt:
+    pkg: nodejs
+    state: present
   tags: nodejs
 
-- name: Add deploy user to rvm group # Required to use bundle install without super user privilege
-  user: name={{ deploy_user }} groups=rvm append=yes
-  when: deploy_user is defined
+# Required to use bundle install without super user privilege
+- name: Add deploy user to rvm group
+  user:
+    name: "{{ deploy_user }}"
+    groups: rvm
+    append: yes
+  when: deploy_user is defined and '--user-install' not in rvm1_install_flags

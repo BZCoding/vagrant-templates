@@ -9,10 +9,13 @@
     become_method: sudo
 
     # Customize vars for Ruby or MySQL (see mysql playbook)
-    # vars:
+    vars:
+      rvm1_user: vagrant
+      rvm1_rubies:
+         - "2.6"
 
     roles:
-      - { role: ruby, tags: ['ruby'] }
+      - ruby
 
       # You can add MySQL and MongoDB roles here...
       # - { role: mysql, tags: ['mysql'] }
@@ -25,4 +28,5 @@
       - name: Hello RubyBox
         action: shell echo "Hello Ruby Box!"
         register: result
-      - debug: var=result.stdout
+      - debug:
+          var: result.stdout
