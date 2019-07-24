@@ -4,7 +4,7 @@ This is a basic Debian Linux-box for PHP and WordPress development. It's by no m
 
 ## Features
 
- - PHP 5.6
+ - PHP 7.3
  - configurable with Apache (mod_php) or Nginx (php-fpm) web server
  - customizable provision with Ansible variables and playbooks
  - can include MySQL and MongoDB
@@ -12,8 +12,7 @@ This is a basic Debian Linux-box for PHP and WordPress development. It's by no m
 
 ## Known Issues
 
- - not yet tested with Simphony
- - missing PHP7 support, see <https://www.linuxbabe.com/linux-server/upgrade-to-php7-on-linux-server-ubuntu-debian>
+ - not tested with Simphony
  - not fully tested with Nginx, see <https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/>
 
 ## Customizations
